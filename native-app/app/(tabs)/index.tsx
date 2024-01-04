@@ -1,11 +1,11 @@
 import {Button, Platform, StyleSheet} from 'react-native';
 import {Text, View} from '../../components/Themed';
-import {Link, useFocusEffect} from 'expo-router';
-import axios from 'axios';
+import {Link} from 'expo-router';
 import {useMachineData} from '../useMachineData';
-import {useCallback, useState} from 'react';
+import {useCallback } from 'react';
 import {PartsOfMachine} from '../../components/PartsOfMachine';
 import {MachineScore} from '../../components/MachineScore';
+import { isEmpty } from 'lodash';
 
 let apiUrl: string =
   'https://fancy-dolphin-65b07b.netlify.app/api/machine-health';
@@ -17,48 +17,27 @@ if (__DEV__) {
 }
 
 export default function StateScreen() {
-  const {machineData, resetMachineData, loadMachineData, setScores} =
+  const {machineData, resetMachineData, calculateMachineData, calculateMachineDataRes} =
     useMachineData();
 
-  //Doing this because we're not using central state like redux
-  useFocusEffect(
-    useCallback(() => {
-      loadMachineData();
-    }, []),
-  );
-
+  // Refactored code to use calculateMachineData hook.
   const calculateHealth = useCallback(async () => {
-    try {
-      const response = await axios.post(apiUrl, {
+    calculateMachineData({ body: {
         machines: machineData?.machines,
-      });
-
-      if (response.data?.factory) {
-        setScores(response.data);
-      }
-    } catch (error) {
-      console.error(error);
-      console.log(
-        `There was an error calculating health. ${
-          error.toString() === 'AxiosError: Network Error'
-            ? 'Is the api server started?'
-            : error
-        }`,
-      );
-    }
+      }});
   }, [machineData]);
 
   return (
     <View style={styles.container}>
       <View style={styles.separator} />
-      {!machineData && (
+      {isEmpty(machineData) && (
         <Link href='/two' style={styles.link}>
           <Text style={styles.linkText}>
             Please log a part to check machine health
           </Text>
         </Link>
       )}
-      {machineData && (
+      {!isEmpty(machineData) && (
         <>
           <PartsOfMachine
             machineName={'Welding Robot'}
@@ -110,7 +89,7 @@ export default function StateScreen() {
       <View style={styles.resetButton}>
         <Button
           title='Reset Machine Data'
-          onPress={async () => await resetMachineData()}
+          onPress={async () => await resetMachineData({})}
           color='#FF0000'
         />
       </View>

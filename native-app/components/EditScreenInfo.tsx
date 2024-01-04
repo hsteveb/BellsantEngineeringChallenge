@@ -1,88 +1,44 @@
-import React, {useCallback, useState} from 'react';
-import {Button, Platform, StyleSheet, TextInput} from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {Button, StyleSheet, TextInput} from 'react-native';
+import { get, invert, isEmpty } from 'lodash';
 
 import {Text, View} from './Themed';
-import {MachineType} from '../data/types';
+import {
+  AssemblyLinePart, machineNames,
+  MachineType,
+  PaintingStationPart,
+  QualityControlStationPart,
+  WeldingRobotPart
+} from '../data/types';
 import {useMachineData} from '../app/useMachineData';
 import {useFocusEffect} from 'expo-router';
 import Picker from './Picker';
+import { objectToPairs } from '../utils/object/objectToPairs';
 
+/** TODO: Add onFocusBack on the redux **/
 export default function EditScreenInfo({path}: {path: string}) {
   const [machineName, setMachineName] = useState('');
   const [partName, setPartName] = useState('');
   const [partValue, setPartValue] = useState('');
   const [isSaved, setIsSaved] = useState(false);
-  const {machineData, updateMachineData, loadMachineData} = useMachineData();
+  const {machineData, updateMachineData, updateMachineRes} = useMachineData();
+  const { isLoading, isSuccess } = updateMachineRes;
 
-  const machineNames = [
-    {label: 'Welding Robot', value: MachineType.WeldingRobot},
-    {label: 'PaintingStation', value: MachineType.PaintingStation},
-    {label: 'Assembly Line', value: MachineType.AssemblyLine},
-    {
-      label: 'Quality Control Station',
-      value: MachineType.QualityControlStation,
-    },
-  ];
+  // Refactored code to use the machineNames object in types so that less bugs are introduced.
+  const machineNameValues = useMemo(() => objectToPairs(invert(machineNames)), []);
 
-  const partNames = [
-    {value: 'arcStability', label: 'Arc Stability'},
-    {
-      value: 'coolingEfficiency',
-      label: 'Cooling Efficiency',
-    },
-    {value: 'electrodeWear', label: 'Electrode Wear'},
-    {value: 'seamWidth', label: 'Seam Width'},
-    {
-      value: 'shieldingPressure',
-      label: 'Shielding Pressure',
-    },
-    {value: 'vibrationLevel', label: 'Vibration Level'},
-    {value: 'wireFeedRate', label: 'Wire Feed Rate'},
-    {
-      value: 'colorConsistency',
-      label: 'Color Consistency',
-    },
-    {value: 'flowRate', label: 'Flow Rate'},
-    {
-      value: 'nozzleCondition',
-      label: 'Nozzle Condition',
-    },
-    {value: 'pressure', label: 'Pressure'},
-    {
-      value: 'alignmentAccuracy',
-      label: 'Alignment Accuracy',
-    },
-    {value: 'beltSpeed', label: 'Belt Speed'},
-    {
-      value: 'fittingTolerance',
-      label: 'Fitting Tolerance',
-    },
-    {value: 'speed', label: 'Speed'},
-    {
-      value: 'cameraCalibration',
-      label: 'Camera Calibration',
-    },
-    {
-      value: 'criteriaSettings',
-      label: 'Criteria Settings',
-    },
-    {
-      value: 'lightIntensity',
-      label: 'Light Intensity',
-    },
-    {
-      value: 'softwareVersion',
-      label: 'Software Version',
-    },
-  ];
+  // Refactored code to show the correct parts for each machine instead of being one list.
+  const partNames = useMemo(() => ({
+    [MachineType.WeldingRobot]: objectToPairs(WeldingRobotPart),
+    [MachineType.PaintingStation]: objectToPairs(PaintingStationPart),
+    [MachineType.AssemblyLine]: objectToPairs(AssemblyLinePart),
+    [MachineType.QualityControlStation]: objectToPairs(QualityControlStationPart),
+  }), []);
 
-  const apiUrl: string = `http://${
-    Platform?.OS === 'android' ? '10.0.2.2' : 'localhost'
-  }:3001/machine-health`;
-
+  // Refactored to support the update hook and also added isEmpty to make sure the object is actually empty.
   const savePart = useCallback(async () => {
     try {
-      const newMachineData = machineData
+      const newMachineData = !isEmpty(machineData)
         ? JSON.parse(JSON.stringify(machineData))
         : {machines: {}}; // Deep copy machine parts
 
@@ -92,23 +48,22 @@ export default function EditScreenInfo({path}: {path: string}) {
 
       newMachineData.machines[machineName][partName] = partValue;
 
-      await updateMachineData(newMachineData);
-      setIsSaved(true);
-      setTimeout(() => {
-        setIsSaved(false);
-      }, 2000);
+      updateMachineData({ body: newMachineData });
     } catch (error) {
       console.error(error);
       throw error; // Handle API errors appropriately
     }
   }, [machineData, updateMachineData, machineName, partName, partValue]);
 
-  //Doing this because we're not using central state like redux
-  useFocusEffect(
-    useCallback(() => {
-      loadMachineData();
-    }, []),
-  );
+  // Moved save logic here to wait until the response is successful and not loading.
+  useEffect(() => {
+    if(!isLoading && isSuccess) {
+      setIsSaved(true);
+      setTimeout(() => {
+        setIsSaved(false);
+      }, 2000);
+    }
+  }, [isLoading, isSuccess]);
 
   return (
     <View>
@@ -116,11 +71,11 @@ export default function EditScreenInfo({path}: {path: string}) {
       <Picker
         value={machineName}
         onSetValue={setMachineName}
-        items={machineNames}
+        items={machineNameValues}
       />
 
       <Text style={styles.label}>Part Name</Text>
-      <Picker value={partName} onSetValue={setPartName} items={partNames} />
+      <Picker value={partName} onSetValue={setPartName} items={get(partNames, machineName, [])} />
 
       <Text style={styles.label}>Part Value</Text>
       <TextInput

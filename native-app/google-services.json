@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1017088531630",
+    "project_id": "bellsant-challenge-ff2a3",
+    "storage_bucket": "bellsant-challenge-ff2a3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1017088531630:android:4361ca05ef5fb78b0ba13f",
+        "android_client_info": {
+          "package_name": "com.bellsantchallenge.steve"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1017088531630-2h5d3qb79nnshphqlk1gcsol0uqb10e5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAIrA5M4qbwhSh_fKMBPI99JYmAGN0FMYQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1017088531630-2h5d3qb79nnshphqlk1gcsol0uqb10e5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1017088531630-4lv8etdfa047epdbrk3pn580tfdehohh.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.bellsantchallenge.steve"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
