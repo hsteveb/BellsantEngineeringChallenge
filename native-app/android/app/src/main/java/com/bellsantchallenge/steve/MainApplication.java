@@ -1,4 +1,4 @@
-package com.machinehealth.app;
+package com.bellsantchallenge.steve;
 
 import android.app.Application;
 import android.content.res.Configuration;

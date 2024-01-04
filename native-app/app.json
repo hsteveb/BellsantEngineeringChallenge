@@ -22,7 +22,7 @@
     "ios": {
       "googleServicesFile": "./GoogleService-Info.plist",
       "supportsTablet": true,
-      "bundleIdentifier": "com.machinehealth.app"
+      "bundleIdentifier": "com.bellsantchallenge.steve"
     },
     "android": {
       "googleServicesFile": "./google-services.json",

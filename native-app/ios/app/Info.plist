@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>myapp</string>
-          <string>com.machinehealth.app</string>
+          <string>com.bellsantchallenge.steve</string>
         </array>
       </dict>
       <dict>
